@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.fortitudetec.sonar</groupId>
+  <artifactId>sonar-ruby-plugin</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>sonar-plugin</packaging>
+
+  <name>Sonar Ruby Plugin</name>
+  <description>Analyze Ruby Source</description>
+  <inceptionYear>2017</inceptionYear>
+  <url>https://github.com/fortitudetec/sonar-ruby-plugin</url>
+
+  <organization>
+    <name>Fortitude Technologies</name>
+    <url>https://fortitudetec.com</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>chrisrohr</id>
+      <name>Chris Rohr</name>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://@github.com/fortitudetec/sonar-ruby-plugin</url>
+    <developerConnection>scm:git:git@github.com:fortitudetec/sonar-ruby-plugin.git</developerConnection>
+  </scm>
+
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/fortitudetec/sonar-ruby-plugin/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>Travis</system>
+    <url>https://travis-ci.org/fortitudetec/sonar-ruby-plugin</url>
+  </ciManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <sonar.buildVersion>5.6</sonar.buildVersion>
+    <jdk.min.version>1.8</jdk.min.version>
+    <sslr.version>1.21</sslr.version>
+
+    <sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
+    <sonar.jacoco.reportPaths>target/jacoco.exec</sonar.jacoco.reportPaths>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.sonarsource.sonarqube</groupId>
+      <artifactId>sonar-plugin-api</artifactId>
+      <version>${sonar.buildVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.sonarsource.sslr-squid-bridge</groupId>
+      <artifactId>sslr-squid-bridge</artifactId>
+      <version>2.6.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.17</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.24</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>21.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.16.6</version>
+    </dependency>
+
+    <!--<dependency>-->
+      <!--<groupId>com.google.code.gson</groupId>-->
+      <!--<artifactId>gson</artifactId>-->
+      <!--<version>2.3</version>-->
+    <!--</dependency>-->
+
+    <!--<dependency>-->
+      <!--<groupId>commons-io</groupId>-->
+      <!--<artifactId>commons-io</artifactId>-->
+      <!--<version>2.4</version>-->
+    <!--</dependency>-->
+
+    <!-- unit tests -->
+    <!--<dependency>-->
+      <!--<groupId>org.sonarsource.sonarqube</groupId>-->
+      <!--<artifactId>sonar-testing-harness</artifactId>-->
+      <!--<version>${sonar.buildVersion}</version>-->
+      <!--<scope>test</scope>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.sonarsource.sslr</groupId>-->
+      <!--<artifactId>sslr-testing-harness</artifactId>-->
+      <!--<version>${sslr.version}</version>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>commons-lang</groupId>-->
+      <!--<artifactId>commons-lang</artifactId>-->
+      <!--<version>2.6</version>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>commons-collections</groupId>-->
+      <!--<artifactId>commons-collections</artifactId>-->
+      <!--<version>3.0</version>-->
+    <!--</dependency>-->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.8.0</version>
+      <scope>test</scope>
+    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.easytesting</groupId>-->
+      <!--<artifactId>fest-assert</artifactId>-->
+      <!--<version>1.4</version>-->
+      <!--<scope>test</scope>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.apache.maven</groupId>-->
+      <!--<artifactId>maven-project</artifactId>-->
+      <!--<version>2.2.1</version>-->
+      <!--<scope>test</scope>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.mockito</groupId>-->
+      <!--<artifactId>mockito-core</artifactId>-->
+      <!--<version>2.4.2</version>-->
+      <!--<scope>test</scope>-->
+    <!--</dependency>-->
+  </dependencies>
+
+  <build>
+    <!--<testResources>-->
+      <!--<testResource>-->
+        <!--<directory>${project.basedir}/src/test/resources</directory>-->
+        <!--<includes>-->
+          <!--<include>**/*</include>-->
+        <!--</includes>-->
+      <!--</testResource>-->
+    <!--</testResources>-->
+
+    <plugins>
+      <plugin>
+        <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+        <artifactId>sonar-packaging-maven-plugin</artifactId>
+        <version>1.16</version>
+        <extensions>true</extensions>
+        <configuration>
+          <pluginKey>ruby</pluginKey>
+          <pluginClass>com.fortitudetec.sonar.plugins.ruby.RubyPlugin</pluginClass>
+          <pluginName>Ruby</pluginName>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.5.1</version>
+        <configuration>
+          <source>${jdk.min.version}</source>
+          <target>${jdk.min.version}</target>
+
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <minimizeJar>true</minimizeJar>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>cglib:cglib-nodep</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!--<plugin>-->
+        <!--&lt;!&ndash; UTF-8 bundles are not supported by Java, so they must be converted during build &ndash;&gt;-->
+        <!--<groupId>org.codehaus.mojo</groupId>-->
+        <!--<artifactId>native2ascii-maven-plugin</artifactId>-->
+        <!--<version>1.0-beta-1</version>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<goals>-->
+              <!--<goal>native2ascii</goal>-->
+            <!--</goals>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
+      <!--<plugin>-->
+        <!--<groupId>org.eluder.coveralls</groupId>-->
+        <!--<artifactId>coveralls-maven-plugin</artifactId>-->
+        <!--<version>3.0.1</version>-->
+      <!--</plugin>-->
+      <!--<plugin>-->
+        <!--<groupId>org.jacoco</groupId>-->
+        <!--<artifactId>jacoco-maven-plugin</artifactId>-->
+        <!--<version>0.7.9</version>-->
+        <!--<configuration>-->
+          <!--<reportSets>-->
+            <!--<reportSet>-->
+              <!--<reports>-->
+                <!--&lt;!&ndash; select non-aggregate reports &ndash;&gt;-->
+                <!--<report>report</report>-->
+              <!--</reports>-->
+            <!--</reportSet>-->
+          <!--</reportSets>-->
+        <!--</configuration>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<id>default-prepare-agent</id>-->
+            <!--<goals>-->
+              <!--<goal>prepare-agent</goal>-->
+            <!--</goals>-->
+          <!--</execution>-->
+          <!--<execution>-->
+            <!--<id>default-report</id>-->
+            <!--<phase>prepare-package</phase>-->
+            <!--<goals>-->
+              <!--<goal>report</goal>-->
+            <!--</goals>-->
+          <!--</execution>-->
+          <!--<execution>-->
+            <!--<id>default-check</id>-->
+            <!--<goals>-->
+              <!--<goal>check</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+              <!--<rules></rules>-->
+            <!--</configuration>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
+
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.2</version>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
