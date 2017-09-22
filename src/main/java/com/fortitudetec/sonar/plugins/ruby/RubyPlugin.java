@@ -2,8 +2,8 @@ package com.fortitudetec.sonar.plugins.ruby;
 
 import com.fortitudetec.sonar.plugins.ruby.metrics.CombinedCoverageSensor;
 import com.fortitudetec.sonar.plugins.ruby.metrics.RubyMetricsSensor;
-import com.fortitudetec.sonar.plugins.ruby.rubocop.RubocopExecutorImpl;
-import com.fortitudetec.sonar.plugins.ruby.rubocop.RubocopParserImpl;
+import com.fortitudetec.sonar.plugins.ruby.rubocop.RubocopExecutor;
+import com.fortitudetec.sonar.plugins.ruby.rubocop.RubocopParser;
 import com.fortitudetec.sonar.plugins.ruby.rubocop.RubocopSensor;
 import com.fortitudetec.sonar.plugins.ruby.simplecov.SimpleCovParser;
 import com.fortitudetec.sonar.plugins.ruby.simplecov.SimpleCovSensor;
@@ -104,9 +104,9 @@ public class RubyPlugin implements Plugin {
             RubyRulesDefinition.class,
             RubocopSensor.class,
 
-            PathResolverImpl.class,
-            RubocopExecutorImpl.class,
-            RubocopParserImpl.class,
+            PathResolver.class,
+            RubocopExecutor.class,
+            RubocopParser.class,
             RubyMetricsSensor.class,
 
             SimpleCovSensor.class,

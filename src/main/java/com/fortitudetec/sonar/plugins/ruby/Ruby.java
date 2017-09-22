@@ -13,17 +13,12 @@ public class Ruby extends AbstractLanguage {
 
     private static final String[] DEFAULT_FILE_SUFFIXES = { "rb", "Gemfile", "gemspec", "rake", "spec", "Capfile", "ru", "Rakefile" };
 
-    public static final String[] RUBY_KEYWORDS_ARRAY = new String[]
+    public static final String[] RUBY_KEYWORDS_ARRAY =
         {
             "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?",
             "do", "else", "elsif", "END", "end", "ensure", "false", "for", "if", "in", "module",
             "next", "nil", "not", "or", "redo", "rescue", "retry", "return", "self", "super",
             "then", "true", "undef", "unless", "until", "when", "while", "yield"
-        };
-
-    static final String[] RUBY_RESERVED_VARIABLES_ARRAY = new String[]
-        {
-            "__FILE__", "__LINE__"
         };
 
     private Settings settings;

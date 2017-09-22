@@ -31,8 +31,6 @@ public class RubyRulesDefinition implements RulesDefinition {
         CODE_SMELL,
         "No description for Rubocop rule");
 
-    private static final String CORE_RULES_CONFIG_RESOURCE_PATH = "/rubocop/rubocop.yml";
-
     private List<RubocopRule> rubylintCoreRules = new ArrayList<>();
 
     public RubyRulesDefinition() {
@@ -72,7 +70,7 @@ public class RubyRulesDefinition implements RulesDefinition {
 
     @SuppressWarnings("unchecked")
     private void loadCoreRules() {
-        InputStream coreRulesStream = RubyRulesDefinition.class.getResourceAsStream(CORE_RULES_CONFIG_RESOURCE_PATH);
+        InputStream coreRulesStream = RubyRulesDefinition.class.getResourceAsStream("/rubocop/rubocop.yml");
         Yaml yaml = new Yaml();
 
         Map<String, Map<String, Object>> rules = (Map<String, Map<String, Object>>) yaml.load(coreRulesStream);

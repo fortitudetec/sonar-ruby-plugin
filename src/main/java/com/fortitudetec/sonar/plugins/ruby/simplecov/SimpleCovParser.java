@@ -3,10 +3,10 @@ package com.fortitudetec.sonar.plugins.ruby.simplecov;
 import static java.util.Objects.nonNull;
 
 import com.fortitudetec.sonar.plugins.ruby.Ruby;
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.BatchSide;
@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 @BatchSide
 public class SimpleCovParser {
@@ -31,44 +34,47 @@ public class SimpleCovParser {
 
     @SuppressWarnings("unchecked")
     public Map<String, NewCoverage> parse(SensorContext ctx, File resultFile) throws IOException {
-        LOG.info("Simplecov result file: {}", resultFile.getAbsolutePath());
-        Map<String, NewCoverage> coveredFiles = Maps.newHashMap();
 
+        Map<String, Map<String, Map<String, List<Double>>>> results = parseResultsFile(resultFile);
+
+        // TODO: Simplecov works with more than Rspec, need to make this configurable
+        Map<String, List<Double>> coverageByFile = results.get("RSpec").get("coverage");
+
+        Iterable<InputFile> inputFiles = ctx.fileSystem().inputFiles(ctx.fileSystem().predicates().hasLanguage(Ruby.LANGUAGE_KEY));
+
+       return StreamSupport.stream(inputFiles.spliterator(), false)
+            .collect(Collectors.toMap(InputFile::absolutePath,
+                file -> buildCoverageForFile(ctx, file, coverageByFile.get(file.absolutePath()))));
+    }
+
+    private NewCoverage buildCoverageForFile(SensorContext ctx, InputFile file, List<Double> lineCounts) {
+        NewCoverage coverage = ctx.newCoverage()
+            .onFile(file)
+            .ofType(CoverageType.UNIT);
+
+        if (lineCounts == null || lineCounts.isEmpty()) {
+            updateForZeroCoverage(file, coverage, gatherNonCommentLinesOfCodeForFile(file));
+        } else {
+            IntStream.range(0, lineCounts.size())
+                .forEach(idx -> coverageForLine(coverage, idx, lineCounts.get(idx)));
+        }
+
+        return coverage;
+    }
+
+    private void coverageForLine(NewCoverage coverage, int lineNumber, Double lineCount) {
+        if (nonNull(lineCount)) {
+            coverage.lineHits(lineNumber + 1, lineCount.intValue());
+        }
+    }
+
+    private Map parseResultsFile(File resultFile) throws IOException {
         String fileString = FileUtils.readFileToString(resultFile, "UTF-8");
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
 
-        Map<String, Map<String, Map<String, List<Integer>>>> results = gson.fromJson(fileString, Map.class);
-
-        Map<String, List<Integer>> coverageByFile = results.get("RSpec").get("coverage");
-
-        Iterable<InputFile> inputFiles = ctx.fileSystem().inputFiles(ctx.fileSystem().predicates().hasLanguage(Ruby.LANGUAGE_KEY));
-
-        inputFiles.forEach(file -> {
-            NewCoverage coverage = ctx.newCoverage()
-                .onFile(file)
-                .ofType(CoverageType.UNIT);
-
-            List<Integer> lineCounts = coverageByFile.get(file.absolutePath());
-
-            if (lineCounts == null || lineCounts.isEmpty()) {
-                updateForZeroCoverage(file, coverage, gatherNonCommentLinesOfCodeForFile(file));
-            } else {
-                for (int i = 0; i < lineCounts.size(); i++) {
-                    Double line = (Double) lineCounts.toArray()[i];
-                    int lineNumber = i + 1;
-                    if (line != null) {
-                        Integer intLine = line.intValue();
-                        coverage.lineHits(lineNumber, intLine);
-                    }
-                }
-            }
-
-            coveredFiles.put(file.absolutePath(), coverage);
-        });
-
-        return coveredFiles;
+        return gson.fromJson(fileString, Map.class);
     }
 
     private Set<Integer> gatherNonCommentLinesOfCodeForFile(InputFile inputFile) {
@@ -81,7 +87,7 @@ public class SimpleCovParser {
             while (nonNull(line = reader.readLine())) {
                 lineNumber++;
                 line = line.trim().replaceAll("\\n|\\t|\\s", "");
-                if (!("".equals(line) || line.startsWith("#"))) {
+                if (!(StringUtils.isBlank(line) || line.startsWith("#"))) {
                     toReturn.add(lineNumber);
                 }
             }
@@ -97,20 +103,13 @@ public class SimpleCovParser {
         return toReturn;
     }
 
-    private NewCoverage updateForZeroCoverage(InputFile inputFile, NewCoverage newCoverage, Set<Integer> nonCommentLineNumbers) {
-        LOG.info("Saving zero for {}, commentLineNumbers: {}", inputFile.absolutePath(), nonCommentLineNumbers);
-
+    private void updateForZeroCoverage(InputFile inputFile, NewCoverage newCoverage, Set<Integer> nonCommentLineNumbers) {
         if (nonCommentLineNumbers != null) {
-            for (Integer nonCommentLineNumber : nonCommentLineNumbers) {
-                newCoverage.lineHits(nonCommentLineNumber, 0);
-            }
+            nonCommentLineNumbers.forEach(lineNumber -> newCoverage.lineHits(lineNumber, 0));
         }
         else {
-            for (int i = 1; i <= inputFile.lines(); i++) {
-                newCoverage.lineHits(i, 0);
-            }
+            IntStream.rangeClosed(0, inputFile.lines())
+                .forEach(idx -> newCoverage.lineHits(idx, 0));
         }
-
-        return newCoverage;
     }
 }

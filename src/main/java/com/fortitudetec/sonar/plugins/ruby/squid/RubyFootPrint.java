@@ -13,7 +13,7 @@ public class RubyFootPrint implements LanguageFootprint {
     private static final double END_WITH_DETECTOR = 0.95;
     private static final double KEYWORDS_DETECTOR = 0.3;
 
-    private final Set<Detector> detectors = new HashSet<Detector>();
+    private final Set<Detector> detectors = new HashSet<>();
 
     public RubyFootPrint() {
         detectors.add(new EndWithDetector(END_WITH_DETECTOR, ')', '"', '\''));
