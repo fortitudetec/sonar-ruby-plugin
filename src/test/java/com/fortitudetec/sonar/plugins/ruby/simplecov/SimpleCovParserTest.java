@@ -2,9 +2,9 @@ package com.fortitudetec.sonar.plugins.ruby.simplecov;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SimpleCovParserTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private SensorContextTester context;
     private File rubyFile;
@@ -77,9 +79,7 @@ public class SimpleCovParserTest {
         results.put("RSpec", testType);
 
         try (FileOutputStream fileOut = new FileOutputStream(rubyFile.getParent() + File.separatorChar + ".resultset.json")) {
-            Gson gson = new Gson();
-
-            IOUtils.write(gson.toJson(results), fileOut);
+            IOUtils.write(MAPPER.writeValueAsString(results), fileOut);
         } catch (Exception e) {
             e.printStackTrace();
         }

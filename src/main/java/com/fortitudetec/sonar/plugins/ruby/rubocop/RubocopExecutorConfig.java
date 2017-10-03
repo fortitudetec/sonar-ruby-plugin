@@ -34,8 +34,4 @@ public class RubocopExecutorConfig {
     public Boolean useExistingRubocopOutput() {
         return isNotBlank(pathToRubocopOutput);
     }
-
-    public Boolean useRubocopConfigInsteadOfFileList() {
-        return isNotBlank(configFile);
-    }
 }

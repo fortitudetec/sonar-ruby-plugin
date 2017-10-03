@@ -2,9 +2,8 @@ package com.fortitudetec.sonar.plugins.ruby.simplecov;
 
 import static java.util.Objects.nonNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortitudetec.sonar.plugins.ruby.Ruby;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,13 +31,15 @@ import java.util.stream.StreamSupport;
 public class SimpleCovParser {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleCovParser.class);
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     @SuppressWarnings("unchecked")
     public Map<String, NewCoverage> parse(SensorContext ctx, File resultFile) throws IOException {
 
-        Map<String, Map<String, Map<String, List<Double>>>> results = parseResultsFile(resultFile);
+        Map<String, Map<String, Map<String, List<Integer>>>> results = parseResultsFile(resultFile);
 
         // TODO: Simplecov works with more than Rspec, need to make this configurable
-        Map<String, List<Double>> coverageByFile = results.get("RSpec").get("coverage");
+        Map<String, List<Integer>> coverageByFile = results.get("RSpec").get("coverage");
 
         Iterable<InputFile> inputFiles = ctx.fileSystem().inputFiles(ctx.fileSystem().predicates().hasLanguage(Ruby.LANGUAGE_KEY));
 
@@ -47,7 +48,7 @@ public class SimpleCovParser {
                 file -> buildCoverageForFile(ctx, file, coverageByFile.get(file.absolutePath()))));
     }
 
-    private NewCoverage buildCoverageForFile(SensorContext ctx, InputFile file, List<Double> lineCounts) {
+    private NewCoverage buildCoverageForFile(SensorContext ctx, InputFile file, List<Integer> lineCounts) {
         NewCoverage coverage = ctx.newCoverage()
             .onFile(file)
             .ofType(CoverageType.UNIT);
@@ -62,19 +63,15 @@ public class SimpleCovParser {
         return coverage;
     }
 
-    private void coverageForLine(NewCoverage coverage, int lineNumber, Double lineCount) {
+    private void coverageForLine(NewCoverage coverage, int lineNumber, Integer lineCount) {
         if (nonNull(lineCount)) {
-            coverage.lineHits(lineNumber + 1, lineCount.intValue());
+            coverage.lineHits(lineNumber + 1, lineCount);
         }
     }
 
     private Map parseResultsFile(File resultFile) throws IOException {
         String fileString = FileUtils.readFileToString(resultFile, "UTF-8");
-
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-
-        return gson.fromJson(fileString, Map.class);
+        return MAPPER.readValue(fileString, Map.class);
     }
 
     private Set<Integer> gatherNonCommentLinesOfCodeForFile(InputFile inputFile) {

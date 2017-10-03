@@ -1,5 +1,7 @@
 package com.fortitudetec.sonar.plugins.ruby.rubocop;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import com.fortitudetec.sonar.plugins.ruby.PathResolver;
 import com.fortitudetec.sonar.plugins.ruby.Ruby;
 import com.fortitudetec.sonar.plugins.ruby.RubyRulesDefinition;
@@ -17,12 +19,12 @@ import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.api.rule.RuleKey;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class RubocopSensor implements Sensor {
     private static final Logger LOG = LoggerFactory.getLogger(RubocopSensor.class);
@@ -53,21 +55,7 @@ public class RubocopSensor implements Sensor {
             return;
         }
 
-        Collection<ActiveRule> allRules = sensorContext.activeRules().findByRepository("rubocop");
-        HashSet<String> ruleNames = new HashSet<>();
-        for (ActiveRule rule : allRules) {
-            ruleNames.add(rule.ruleKey().rule());
-        }
-
-        FileSystem fs = sensorContext.fileSystem();
-        List<String> paths = new ArrayList<>();
-
-        for (InputFile file : fs.inputFiles(fs.predicates().hasLanguage(Ruby.LANGUAGE_KEY))) {
-            String pathAdjusted = file.absolutePath();
-            paths.add(pathAdjusted);
-        }
-
-        List<String> jsonResults = this.executor.execute(config, paths);
+        String jsonResults = this.executor.execute(config, findFilesToLint(sensorContext, config));
 
         Map<String, List<RubocopIssue>> issues = parser.parse(jsonResults);
 
@@ -76,70 +64,80 @@ public class RubocopSensor implements Sensor {
             return;
         }
 
-        File baseDir = fs.baseDir();
-        String baseDirPath = baseDir.getPath();
-        String baseDirCanonicalPath = null;
-        try {
-            baseDirCanonicalPath = baseDir.getCanonicalPath();
-        } catch (IOException e) {
-            LOG.error("Failed to canonicalize " + baseDirPath, e);
+        Collection<ActiveRule> allRules = sensorContext.activeRules().findByRepository("rubocop");
+        Set<String> ruleNames = allRules.stream().map(rule -> rule.ruleKey().rule()).collect(Collectors.toSet());
+
+        issues.entrySet().forEach(rubyFilesIssues -> generateSonarIssuesFromResults(rubyFilesIssues, sensorContext, ruleNames));
+    }
+
+    private List<String> findFilesToLint(SensorContext context, RubocopExecutorConfig config) {
+        if (config.useExistingRubocopOutput()) {
+            return newArrayList();
         }
 
-        for (Map.Entry<String, List<RubocopIssue>> kvp : issues.entrySet()) {
-            String filePath = kvp.getKey();
-            List<RubocopIssue> batchIssues = kvp.getValue();
+        Iterable<InputFile> inputFiles = context.fileSystem().inputFiles(context.fileSystem().predicates().hasLanguage(Ruby.LANGUAGE_KEY));
 
-            if (batchIssues.isEmpty()) {
-                continue;
+        return StreamSupport.stream(inputFiles.spliterator(), false)
+            .map(InputFile::absolutePath)
+            .collect(Collectors.toList());
+    }
+
+    private void generateSonarIssuesFromResults(Map.Entry<String, List<RubocopIssue>> rubyFilesIssues, SensorContext sensorContext, Set<String> ruleNames) {
+        List<RubocopIssue> batchIssues = rubyFilesIssues.getValue();
+
+        if (batchIssues.isEmpty()) {
+            return;
+        }
+
+        String filePath = rubyFilesIssues.getKey();
+        InputFile inputFile = findMatchingFile(sensorContext.fileSystem(), filePath);
+        if (inputFile == null) {
+            LOG.warn("Rubocop reported issues against a file that isn't in the analysis set - will be ignored: {}", filePath);
+            return;
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Handling Rubocop output for '{}' reporting against '{}'", filePath, inputFile.absolutePath());
+        }
+
+        batchIssues.forEach(issue -> saveNewIssue(issue, inputFile, ruleNames, sensorContext));
+    }
+
+    private InputFile findMatchingFile(FileSystem fs, String filePath) {
+        File matchingFile = fs.resolvePath(filePath);
+
+        if (matchingFile != null) {
+            try {
+                return fs.inputFile(fs.predicates().is(matchingFile));
             }
-
-            if (baseDirCanonicalPath != null) {
-                filePath = filePath.replace(baseDirCanonicalPath, baseDirPath);
-            }
-
-            File matchingFile = fs.resolvePath(filePath);
-            InputFile inputFile = null;
-
-            if (matchingFile != null) {
-                try {
-                    inputFile = fs.inputFile(fs.predicates().is(matchingFile));
-                }
-                catch (IllegalArgumentException e) {
-                    LOG.error("Failed to resolve " + filePath + " to a single path", e);
-                    continue;
-                }
-            }
-
-            if (inputFile == null) {
-                LOG.warn("Rubocop reported issues against a file that isn't in the analysis set - will be ignored: {}", filePath);
-                continue;
-            } else if (LOG.isDebugEnabled()) {
-                LOG.debug("Handling Rubocop output for '{}' reporting against '{}'", filePath, inputFile.absolutePath());
-            }
-
-            for (RubocopIssue issue : batchIssues) {
-                // Make sure the rule we're violating is one we recognise - if not, we'll
-                // fall back to the generic 'tslint-issue' rule
-                String ruleName = issue.getRuleName();
-                if (!ruleNames.contains(ruleName)) {
-                    ruleName = RubyRulesDefinition.RUBY_LINT_UNKNOWN_RULE.key;
-                }
-
-                NewIssue newIssue =
-                    sensorContext
-                        .newIssue()
-                        .forRule(RuleKey.of("rubocop", ruleName));
-
-                NewIssueLocation newIssueLocation =
-                    newIssue
-                        .newLocation()
-                        .on(inputFile)
-                        .message(issue.getFailure())
-                        .at(inputFile.selectLine(issue.getPosition().getLine()));
-
-                newIssue.at(newIssueLocation);
-                newIssue.save();
+            catch (IllegalArgumentException e) {
+                LOG.error("Failed to resolve " + filePath + " to a single path", e);
             }
         }
+        return null;
+    }
+
+    private void saveNewIssue(RubocopIssue issue, InputFile inputFile, Set<String> ruleNames, SensorContext sensorContext) {
+        // Make sure the rule we're violating is one we recognise - if not, we'll
+        // fall back to the generic 'rubocop-issue' rule
+        String ruleName = issue.getRuleName();
+        if (!ruleNames.contains(ruleName)) {
+            ruleName = RubyRulesDefinition.RUBY_LINT_UNKNOWN_RULE.key;
+        }
+
+        NewIssue newIssue =
+            sensorContext
+                .newIssue()
+                .forRule(RuleKey.of("rubocop", ruleName));
+
+        NewIssueLocation newIssueLocation =
+            newIssue
+                .newLocation()
+                .on(inputFile)
+                .message(issue.getFailure())
+                .at(inputFile.selectLine(issue.getPosition().getLine()));
+
+        newIssue.at(newIssueLocation);
+        newIssue.save();
     }
 }

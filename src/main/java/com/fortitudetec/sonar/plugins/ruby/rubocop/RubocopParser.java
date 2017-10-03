@@ -1,56 +1,63 @@
 package com.fortitudetec.sonar.plugins.ruby.rubocop;
 
+import static java.util.stream.Collectors.toMap;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortitudetec.sonar.plugins.ruby.model.RubocopIssue;
 import com.fortitudetec.sonar.plugins.ruby.model.RubocopPosition;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fortitudetec.sonar.plugins.ruby.rubocop.model.RubocopFile;
+import com.fortitudetec.sonar.plugins.ruby.rubocop.model.RubocopOffense;
+import com.fortitudetec.sonar.plugins.ruby.rubocop.model.RubocopResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.BatchSide;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @BatchSide
 public class RubocopParser {
-    @SuppressWarnings("unchecked")
-    public Map<String, List<RubocopIssue>> parse(List<String> toParse) {
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
+    private static final Logger LOG = LoggerFactory.getLogger(RubocopParser.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-        Map<String, List<RubocopIssue>> toReturn = new HashMap<>();
-
-        for (String batch : toParse) {
-            Map<String, List<Map<String, Object>>> json = gson.fromJson(batch, Map.class);
-
-
-            json.get("files").forEach(file -> {
-                List<RubocopIssue> issues = populateIssues((List<Map<String, Object>>) file.get("offenses"));
-
-                if (!issues.isEmpty()) {
-                    toReturn.put((String) file.get("path"), issues);
-                }
-            });
-        }
-
-        return toReturn;
+    public Map<String, List<RubocopIssue>> parse(String toParse) {
+        return collectIssues(toParse).entrySet().stream()
+            .filter(entry -> !entry.getValue().isEmpty())
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @SuppressWarnings("unchecked")
-    private List<RubocopIssue> populateIssues(List<Map<String, Object>> offenses) {
-        return offenses.stream()
+    private Map<String, List<RubocopIssue>> collectIssues(String resultsFile) {
+        try {
+            RubocopResult results = MAPPER.readValue(resultsFile, RubocopResult.class);
+
+            return results.getFiles().stream()
+                .collect(toMap(RubocopFile::getPath, this::populateIssues));
+        } catch (IOException e) {
+            LOG.warn("Unable to parse results file", e);
+        }
+
+        return Collections.emptyMap();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<RubocopIssue> populateIssues(RubocopFile file) {
+        return file.getOffenses().stream()
             .map(offense -> RubocopIssue.builder()
-                .ruleName((String) offense.get("cop_name"))
-                .failure((String) offense.get("message"))
-                .position(populatePosition((Map<String, Double>) offense.get("location")))
+                .ruleName(offense.getCopName())
+                .failure(offense.getMessage())
+                .position(populatePosition(offense))
                 .build())
             .collect(Collectors.toList());
     }
 
-    private RubocopPosition populatePosition(Map<String, Double> location) {
+    private RubocopPosition populatePosition(RubocopOffense offense) {
         return RubocopPosition.builder()
-            .line(location.get("line").intValue())
-            .character(location.get("column").intValue())
+            .line(offense.getLocation().get("line").intValue())
+            .character(offense.getLocation().get("column").intValue())
             .build();
     }
 }
