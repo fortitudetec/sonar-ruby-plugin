@@ -8,7 +8,6 @@ import com.fortitudetec.sonar.plugins.ruby.rubocop.RubocopSensor;
 import com.fortitudetec.sonar.plugins.ruby.simplecov.SimpleCovParser;
 import com.fortitudetec.sonar.plugins.ruby.simplecov.SimpleCovSensor;
 import org.sonar.api.Plugin;
-import org.sonar.api.PropertyType;
 import org.sonar.api.config.PropertyDefinition;
 import org.sonar.api.resources.Qualifiers;
 
@@ -24,7 +23,6 @@ public class RubyPlugin implements Plugin {
     // Properties
     public static final String FILE_SUFFIXES = "sonar.ruby.file.suffixes";
     public static final String SIMPLECOV_REPORT_PATH = "sonar.ruby.coverage.reportPath";
-    public static final String FORCE_ZERO_COVERAGE = "sonar.ruby.coverage.forceZeroCoverage";
     public static final String RUBOCOP_CONFIG = "sonar.ruby.rubocopConfig";
     public static final String RUBOCOP_BIN = "sonar.ruby.rubocop";
     public static final String RUBOCOP_REPORT_PATH = "sonar.ruby.rubocop.reportPath";
@@ -50,16 +48,6 @@ public class RubyPlugin implements Plugin {
                 .subCategory(TEST_AND_COVERAGE)
                 .onQualifiers(Qualifiers.PROJECT)
                 .defaultValue("coverage/.resultset.json")
-                .build(),
-
-            PropertyDefinition.builder(FORCE_ZERO_COVERAGE)
-                .name("Assign zero line coverage to source files without coverage report(s)")
-                .description("If 'True', assign zero line coverage to source files without coverage report(s), which results in a more realistic overall Technical Debt value.")
-                .category(RUBY_CATEGORY)
-                .subCategory(TEST_AND_COVERAGE)
-                .onQualifiers(Qualifiers.PROJECT)
-                .defaultValue("false")
-                .type(PropertyType.BOOLEAN)
                 .build(),
 
             // RUBOCOP
