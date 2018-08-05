@@ -1,0 +1,15 @@
+# https://docs.travis-ci.com/user/sonarcloud/
+
+language: java
+
+addons:
+  sonarcloud:
+    organization: sonarcloud_organization_key
+    token:
+      secure: encrypted_token_value
+
+script:
+  # builds the project
+  # runs tests with coverage
+  # execute SonarCloud analysis
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
