@@ -4,9 +4,9 @@ language: java
 
 addons:
   sonarcloud:
-    organization: sonarcloud_organization_key
+    organization: fortitudetec
     token:
-      secure: encrypted_token_value
+      secure: 527af96a234edc72a58c766b3ef7ccc1d2159018
 
 script:
   # builds the project
