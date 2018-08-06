@@ -1,6 +1,8 @@
 # Sonar Ruby Plugin
 SonarQube plugin for analyzing Ruby files
 
+![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=com.fortitudetec.sonar%3Asonar-ruby-plugin&metric=alert_status)
+
 ## Requirements
 * Rubocop (https://github.com/bbatsov/rubocop)
 * Simplecov (https://github.com/colszowka/simplecov)
