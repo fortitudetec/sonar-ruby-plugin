@@ -1,0 +1,15 @@
+# https://docs.travis-ci.com/user/sonarcloud/
+
+language: java
+
+addons:
+  sonarcloud:
+    organization: fortitudetec
+    token:
+      secure: 527af96a234edc72a58c766b3ef7ccc1d2159018
+
+script:
+  # builds the project
+  # runs tests with coverage
+  # execute SonarCloud analysis
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
