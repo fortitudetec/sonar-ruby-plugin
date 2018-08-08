@@ -23,6 +23,7 @@ public class RubyPlugin implements Plugin {
     // Properties
     public static final String FILE_SUFFIXES = "sonar.ruby.file.suffixes";
     public static final String SIMPLECOV_REPORT_PATH = "sonar.ruby.coverage.reportPath";
+    public static final String TEST_FRAMEWORK = "sonar.ruby.coverage.framework";
     public static final String RUBOCOP_CONFIG = "sonar.ruby.rubocopConfig";
     public static final String RUBOCOP_BIN = "sonar.ruby.rubocop";
     public static final String RUBOCOP_REPORT_PATH = "sonar.ruby.rubocop.reportPath";
@@ -48,6 +49,15 @@ public class RubyPlugin implements Plugin {
                 .subCategory(TEST_AND_COVERAGE)
                 .onQualifiers(Qualifiers.PROJECT)
                 .defaultValue("coverage/.resultset.json")
+                .build(),
+
+            PropertyDefinition.builder(TEST_FRAMEWORK)
+                .name("Name of test framework")
+                .description("Name of test framework.")
+                .category(RUBY_CATEGORY)
+                .subCategory(TEST_AND_COVERAGE)
+                .onQualifiers(Qualifiers.PROJECT)
+                .defaultValue("RSpec")
                 .build(),
 
             // RUBOCOP

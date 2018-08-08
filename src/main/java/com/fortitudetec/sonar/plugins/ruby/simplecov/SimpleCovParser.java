@@ -1,9 +1,11 @@
 package com.fortitudetec.sonar.plugins.ruby.simplecov;
 
 import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortitudetec.sonar.plugins.ruby.Ruby;
+import com.fortitudetec.sonar.plugins.ruby.RubyPlugin;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,8 +40,14 @@ public class SimpleCovParser {
 
         Map<String, Map<String, Map<String, List<Integer>>>> results = parseResultsFile(resultFile);
 
-        // TODO: Simplecov works with more than Rspec, need to make this configurable
-        Map<String, List<Integer>> coverageByFile = results.get("RSpec").get("coverage");
+        String testFramework = ctx.settings().getString(RubyPlugin.TEST_FRAMEWORK);
+
+        if (isNull(testFramework)) {
+            LOG.warn("Test framework is not set, unable to parse coverage metrics");
+            return null;
+        }
+
+        Map<String, List<Integer>> coverageByFile = results.get(testFramework).get("coverage");
 
         Iterable<InputFile> inputFiles = ctx.fileSystem().inputFiles(ctx.fileSystem().predicates().hasLanguage(Ruby.LANGUAGE_KEY));
 
