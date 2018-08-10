@@ -31,6 +31,7 @@ sonar.test.inclusions=**/*.spec.ts
 
 sonar.ruby.file.suffixes=rb,ruby
 sonar.ruby.coverage.reportPath=coverage/.resultset.json
+sonar.ruby.coverage.framework=RSpec
 sonar.ruby.rubocopConfig=.rubocop.yml
 sonar.ruby.rubocop=/usr/bin/rubocop
 sonar.ruby.rubocop.reportPath=rubocop-result.json

@@ -18,9 +18,9 @@ public class RubyPluginTest {
 
         plugin.define(context);
 
-        assertThat(context.getExtensions().size()).isEqualTo(17);
+        assertThat(context.getExtensions().size()).isEqualTo(18);
 
-        assertThat(context.getExtensions().stream().filter(ext -> ext instanceof PropertyDefinition).count()).isEqualTo(6);
+        assertThat(context.getExtensions().stream().filter(ext -> ext instanceof PropertyDefinition).count()).isEqualTo(7);
         assertThat(context.getExtensions().stream().filter(ext -> ext instanceof Class).count()).isEqualTo(11);
     }
 }
