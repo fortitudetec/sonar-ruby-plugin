@@ -2,6 +2,7 @@
 SonarQube plugin for analyzing Ruby files
 
 ![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=com.fortitudetec.sonar%3Asonar-ruby-plugin&metric=alert_status)
+[![Build Status](https://travis-ci.com/fortitudetec/sonar-ruby-plugin.svg?branch=master)](https://travis-ci.com/fortitudetec/sonar-ruby-plugin)
 
 ## Requirements
 * Rubocop (https://github.com/bbatsov/rubocop)
