@@ -15,7 +15,7 @@ public class RubyFootPrint implements LanguageFootprint {
 
     private final Set<Detector> detectors = new HashSet<>();
 
-    public RubyFootPrint() {
+    RubyFootPrint() {
         detectors.add(new EndWithDetector(END_WITH_DETECTOR, ')', '"', '\''));
         detectors.add(new KeywordsDetector(KEYWORDS_DETECTOR, Ruby.RUBY_KEYWORDS_ARRAY));
     }

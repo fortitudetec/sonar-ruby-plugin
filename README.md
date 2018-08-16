@@ -62,3 +62,15 @@ In order to run the analysis for Ruby you will need to utilize the [sonar-scanne
 * Make sure you have a sonar-project.properties file in the root of your project directory  
 * run `sonar-scanner` 
 
+## Contributing
+#### 1. GitHub issue
+To request a new feature, [create a GitHub issue](https://github.com/fortitudetec/sonar-ruby-plugin/issues/new). Even if you plan to implement it yourself and submit it back to the community, please create an issue to be sure that we can follow up on it.
+
+#### 2. Pull Request
+To submit a contribution, create a pull request for this repository.
+
+## License
+
+Copyright 2017-2018 Fortitude Technologies.
+
+Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License)

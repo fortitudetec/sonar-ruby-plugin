@@ -6,11 +6,11 @@
 
   <groupId>com.fortitudetec.sonar</groupId>
   <artifactId>sonar-ruby-plugin</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <packaging>sonar-plugin</packaging>
 
   <name>Sonar Ruby Plugin</name>
-  <description>Analyze Ruby Source</description>
+  <description>Analyze Ruby Source for code quality and code test coverage</description>
   <inceptionYear>2017</inceptionYear>
   <url>https://github.com/fortitudetec/sonar-ruby-plugin</url>
 
