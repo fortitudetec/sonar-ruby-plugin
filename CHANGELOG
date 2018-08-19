@@ -1,2 +1,3 @@
 v 1.1.0:
     - Support other test runners besides RSpec
+    - Added a sample Rails application for testing the plugin with SonarQube
