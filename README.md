@@ -7,7 +7,7 @@ SonarQube plugin for analyzing Ruby files
 ## Requirements
 * Rubocop (https://github.com/bbatsov/rubocop)
 * Simplecov (https://github.com/colszowka/simplecov)
-* Tested with v6.5
+* Tested with v6.5, v6.6, v7.1
 
 ## Overview
 This is plugin for SonarQube 5.6+ for analysing projects with Ruby content that supports:
