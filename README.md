@@ -1,3 +1,5 @@
+## This project is no longer maintained and is archived
+
 # Sonar Ruby Plugin
 SonarQube plugin for analyzing Ruby files
 
